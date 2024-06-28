@@ -13,6 +13,7 @@
   yum:
     name: https://www.dcache.org/old/downloads/1.9/repo/{{ dcache_version[0:3] }}/dcache-{{ dcache_version }}-1.noarch.rpm
     state: present
+    disable_gpg_check: true
   when: "'dcache' not in ansible_facts.packages"
 - name: Check hostcert file
   file: 

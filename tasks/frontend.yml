@@ -6,11 +6,18 @@
   yum: 
     name: "https://download.postgresql.org/pub/repos/yum/reporpms/EL-{{ ansible_distribution_major_version }}-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
     state: present
+    disable_gpg_check: true
   when: not stat_yum_repo.stat.exists
 - name: Install python2-passlib for hpasswd 
   yum:
     name:  python2-passlib
     state: present
+  when: ansible_distribution_major_version == 7
+- name: Install passlib
+  dnf:
+    name: python-passlib
+    state: present
+  when: ansible_distribution_major_version >= 9
 - name: Install psycopg2 for postgresql control. 
   package:
     name:  python-psycopg2
@@ -20,7 +27,7 @@
     name: "postgresql{{ psql_version }}-server"
     state: present
   notify:
-    - init db
+    - initdb
 - copy: 
     dest: "/var/lib/pgsql/{{ psql_version }}/data/pg_hba.conf"
     owner: postgres
@@ -83,6 +90,7 @@ session  requisite   authzdb\n
     dest: /etc/grid-security/storage-authzdb
     owner: dcache
     group: dcache
+    mode: "0644"
     content: "version 2.1\n
 
 authorize vagrant read-write 1000 1000 /home/vagrant /\n
@@ -92,6 +100,7 @@ authorize admin read-write 0 0 / /\n
     dest: /etc/dcache/multi-mapfile
     owner: dcache
     group: dcache
+    mode: "0644"
     content: "username:vagrant uid:1000 gid:1000,true\n
 username:admin uid:0 gid:0,true"
 - copy:
